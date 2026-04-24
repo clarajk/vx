@@ -32,7 +32,7 @@ jobs:
         run: |
           mkdir -p dist
           cp target/$TARGET/release/$BIN_NAME dist/$BIN_NAME
-          tar -C dist -czf $BIN_NAME-${{ github.ref_name }}-$TARGET.tar.gz $BIN_NAME
+          tar -C dist -czf $BIN_NAME-$TARGET.tar.gz $BIN_NAME
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
