@@ -146,4 +146,52 @@ pub enum Command {
 
     /// Unpin manually pinned package(s).
     Unpin(UnpinArgs),
+
+    #[clap(alias = "ls")]
+    /// List packages.
+    List(ListArgs),
+    //#[clap(alias = "r", subcommand)]
+    // Manage repositories.
+    //Repo(RepoCommand),
 }
+
+#[derive(Subcommand, Debug)]
+pub enum ListCommand {
+    /// Lists all packages on the system.
+    All,
+    /// List manually installed packages.
+    Manual,
+    /// List orphaned packages.
+    Orphans,
+}
+
+#[derive(clap::Args, Debug)]
+pub struct ListArgs {
+    #[clap(short, long)]
+    /// Enable verbose messages.
+    pub verbose: bool,
+
+    /// Optional query string.
+    pub query: Option<String>,
+
+    #[clap(short, long)]
+    pub fzf: bool,
+
+    #[clap(subcommand)]
+    /// The type of listing to perform. If not provided, lists all packages on the system.
+    pub command: ListCommand,
+}
+
+// #[derive(Subcommand, Debug)]
+// pub enum RepoCommand {
+//     #[clap(alias = "a")]
+//     Add,
+//     #[clap(alias = "rm")]
+//     Remove,
+//     #[clap(alias = "ls")]
+//     List,
+//     #[clap(alias = "on", alias = "e")]
+//     Enable,
+//     #[clap(alias = "off", alias = "d")]
+//     Disable,
+// }

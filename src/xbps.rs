@@ -1,5 +1,5 @@
 use crate::cli::{
-    AddArgs, CleanArgs, FindArgs, PinArgs, RemoveArgs, UnpinArgs, UpdateArgs, UpgradeArgs,
+    AddArgs, CleanArgs, FindArgs, ListArgs, PinArgs, RemoveArgs, UnpinArgs, UpdateArgs, UpgradeArgs,
 };
 use nix::unistd::Uid;
 use std::io::Result;
@@ -36,11 +36,8 @@ pub fn sync() -> Result<ExitStatus> {
     sudo("xbps-install").arg("--sync").status()
 }
 
-fn fzf_xbps_search(query: impl AsRef<str>) -> Result<Vec<String>> {
-    let mut query = Command::new("xbps-query")
-        .args(["-Rs", query.as_ref()])
-        .stdout(Stdio::piped())
-        .spawn()?;
+fn fzf_xbps_search(mut query: Command) -> Result<Vec<String>> {
+    let mut query = query.stdout(Stdio::piped()).spawn()?;
 
     let Some(query_stdout) = query.stdout.take() else {
         return Err(std::io::Error::other("failed to capture xbps-query stdout"));
@@ -106,7 +103,10 @@ pub fn add(args: AddArgs) -> Result<ExitStatus> {
             no_fzf();
         }
 
-        let pkgs = fzf_xbps_search("")?;
+        let mut query = Command::new("xbps-query");
+        query.args(["-R", "--search", ""]);
+
+        let pkgs = fzf_xbps_search(query)?;
         check!(!pkgs.is_empty());
 
         let mut filtered = Vec::with_capacity(pkgs.len());
@@ -214,7 +214,10 @@ pub fn find(args: FindArgs) -> Result<ExitStatus> {
             no_fzf();
         }
 
-        let query = args.query.as_deref().unwrap_or("");
+        let query_str = args.query.as_deref().unwrap_or("");
+        let mut query = Command::new("xbps-query");
+        query.args(["-R", "--search", query_str]);
+
         for line in fzf_xbps_search(query)? {
             println!("{line}");
         }
@@ -244,4 +247,60 @@ pub fn pin(args: PinArgs) -> Result<ExitStatus> {
 
 pub fn unpin(args: UnpinArgs) -> Result<ExitStatus> {
     set_mode("auto", args.packages)
+}
+
+pub fn list_all_pkgs(args: ListArgs) -> Result<ExitStatus> {
+    let mut cmd = Command::new("xbps-query");
+
+    if args.verbose {
+        cmd.arg("--verbose");
+    }
+
+    if let Some(query) = args.query {
+        cmd.args(["--search", &query]);
+    } else {
+        cmd.arg("--list-pkgs");
+    }
+
+    if args.fzf {
+        for line in fzf_xbps_search(cmd)? {
+            println!("{line}");
+        }
+    }
+
+    Ok(ExitStatus::default())
+}
+
+pub fn list_orphaned_pkgs(args: ListArgs) -> Result<ExitStatus> {
+    let mut cmd = Command::new("xbps-query");
+    cmd.arg("--list-orphans");
+
+    if args.verbose {
+        cmd.arg("--verbose");
+    }
+
+    if args.fzf {
+        for line in fzf_xbps_search(cmd)? {
+            println!("{line}");
+        }
+    }
+
+    Ok(ExitStatus::default())
+}
+
+pub fn list_manual_pkgs(args: ListArgs) -> Result<ExitStatus> {
+    let mut cmd = Command::new("xbps-query");
+    cmd.arg("--list-manual-pkgs");
+
+    if args.verbose {
+        cmd.arg("--verbose");
+    }
+
+    if args.fzf {
+        for line in fzf_xbps_search(cmd)? {
+            println!("{line}");
+        }
+    }
+
+    Ok(ExitStatus::default())
 }

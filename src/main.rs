@@ -1,4 +1,4 @@
-use crate::cli::{Args, Command};
+use crate::cli::{Args, Command, ListCommand};
 use clap::Parser;
 
 mod cli;
@@ -16,6 +16,11 @@ fn main() -> std::io::Result<()> {
         Command::Find(args) => xbps::find(args),
         Command::Pin(args) => xbps::pin(args),
         Command::Unpin(args) => xbps::unpin(args),
+        Command::List(args) => match args.command {
+            ListCommand::All => xbps::list_all_pkgs(args),
+            ListCommand::Orphans => xbps::list_orphaned_pkgs(args),
+            ListCommand::Manual => xbps::list_manual_pkgs(args),
+        },
     }?;
 
     Ok(())
