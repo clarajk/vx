@@ -266,6 +266,8 @@ pub fn list_all_pkgs(args: ListArgs) -> Result<ExitStatus> {
         for line in fzf_xbps_search(cmd)? {
             println!("{line}");
         }
+    } else {
+        cmd.status()?;
     }
 
     Ok(ExitStatus::default())
@@ -283,6 +285,8 @@ pub fn list_orphaned_pkgs(args: ListArgs) -> Result<ExitStatus> {
         for line in fzf_xbps_search(cmd)? {
             println!("{line}");
         }
+    } else {
+        cmd.status()?;
     }
 
     Ok(ExitStatus::default())
@@ -300,6 +304,8 @@ pub fn list_manual_pkgs(args: ListArgs) -> Result<ExitStatus> {
         for line in fzf_xbps_search(cmd)? {
             println!("{line}");
         }
+    } else {
+        cmd.status()?;
     }
 
     Ok(ExitStatus::default())

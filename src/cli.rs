@@ -157,10 +157,15 @@ pub enum Command {
 
 #[derive(Subcommand, Debug)]
 pub enum ListCommand {
+    #[clap(alias = "a")]
     /// Lists all packages on the system.
     All,
+
+    #[clap(alias = "m")]
     /// List manually installed packages.
     Manual,
+
+    #[clap(alias = "o")]
     /// List orphaned packages.
     Orphans,
 }
