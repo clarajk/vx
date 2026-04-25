@@ -1,4 +1,16 @@
 use clap::Subcommand;
+use nix::unistd::Uid;
+
+pub fn sudo(program: impl AsRef<str>) -> std::process::Command {
+    if Uid::current().is_root() {
+        return std::process::Command::new(program.as_ref());
+    }
+
+    let mut cmd = std::process::Command::new("sudo");
+    cmd.arg(program.as_ref());
+
+    cmd
+}
 
 #[derive(clap::Parser, Debug)]
 #[clap(version, author, about)]
@@ -150,9 +162,10 @@ pub enum Command {
     #[clap(alias = "ls")]
     /// List packages.
     List(ListArgs),
-    //#[clap(alias = "r", subcommand)]
-    // Manage repositories.
-    //Repo(RepoCommand),
+
+    #[clap(alias = "r", subcommand)]
+    /// Manage repositories.
+    Repo(RepoCommand),
 }
 
 #[derive(Subcommand, Debug)]
@@ -187,16 +200,50 @@ pub struct ListArgs {
     pub command: ListCommand,
 }
 
-// #[derive(Subcommand, Debug)]
-// pub enum RepoCommand {
-//     #[clap(alias = "a")]
-//     Add,
-//     #[clap(alias = "rm")]
-//     Remove,
-//     #[clap(alias = "ls")]
-//     List,
-//     #[clap(alias = "on", alias = "e")]
-//     Enable,
-//     #[clap(alias = "off", alias = "d")]
-//     Disable,
-// }
+#[derive(Subcommand, Debug)]
+pub enum RepoCommand {
+    #[clap(alias = "a")]
+    Add(RepoAddArgs),
+    #[clap(alias = "rm")]
+    Remove(RepoAddArgs),
+    #[clap(alias = "ls")]
+    List(RepoListArgs),
+    #[clap(alias = "on", alias = "e")]
+    Enable(RepoAddArgs),
+    #[clap(alias = "off", alias = "d")]
+    Disable(RepoAddArgs),
+}
+
+#[derive(clap::Args, Debug)]
+pub struct RepoAddArgs {
+    /// The friendly name for the repo. Used for other repo actions and easy identification.
+    pub name: String,
+
+    /// The actual repository URL.
+    pub url: String,
+
+    #[clap(short, long)]
+    /// Add the repository in a disabled state (default is enabled).
+    pub disabled: bool,
+}
+
+#[derive(clap::Args, Debug)]
+pub struct RepoActionArgs {
+    /// The name of the repository to operate on.
+    pub name: String,
+}
+
+#[derive(clap::Args, Debug)]
+pub struct RepoListArgs {
+    #[clap(short, long)]
+    /// Enable verbose messages showing the repository names, URLs, and enabled/disabled status.
+    pub verbose: bool,
+
+    #[clap(long)]
+    /// Don't show enabled repositories.
+    pub no_enabled: bool,
+
+    #[clap(long)]
+    /// Don't show disabled repositories.
+    pub no_disabled: bool,
+}

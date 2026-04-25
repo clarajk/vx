@@ -1,7 +1,7 @@
 use crate::cli::{
-    AddArgs, CleanArgs, FindArgs, ListArgs, PinArgs, RemoveArgs, UnpinArgs, UpdateArgs, UpgradeArgs,
+    AddArgs, CleanArgs, FindArgs, ListArgs, PinArgs, RemoveArgs, UnpinArgs, UpdateArgs,
+    UpgradeArgs, sudo,
 };
-use nix::unistd::Uid;
 use std::io::Result;
 use std::process::{Command, ExitStatus, Stdio};
 use which::which;
@@ -19,17 +19,6 @@ fn no_fzf() -> ! {
     eprintln!("fzf was not found");
     eprintln!("hint: install it using `vx add fzf`");
     std::process::exit(1);
-}
-
-fn sudo(program: impl AsRef<str>) -> Command {
-    if Uid::current().is_root() {
-        return Command::new(program.as_ref());
-    }
-
-    let mut cmd = Command::new("sudo");
-    cmd.arg(program.as_ref());
-
-    cmd
 }
 
 pub fn sync() -> Result<ExitStatus> {
@@ -70,12 +59,9 @@ fn fzf_xbps_search(mut query: Command) -> Result<Vec<String>> {
 
 fn parse_xbps_line(line: &str) -> Option<(bool, String)> {
     let mut parts = line.split_whitespace();
-
     let status = parts.next()?; // "[*]" or "[-]" etc
     let pkgver = parts.next()?; // "foo-bar-1.2.3_1"
-
     let (name, _) = pkgver.rsplit_once('-')?;
-
     let installed = status.trim() == "[*]";
 
     Some((installed, name.to_string()))
