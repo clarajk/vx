@@ -46,16 +46,20 @@ fn main() -> std::io::Result<()> {
                 let longest_name = filtered.iter().map(|x| x.name.len()).max().unwrap_or(0);
 
                 for repo in filtered {
-                    print!(
-                        "{:9} ",
-                        if repo.enabled {
-                            "[enabled]"
-                        } else {
-                            "[disabled]"
-                        }
-                    );
-                    print!("{:>longest_name$} ", repo.name);
-                    println!("({})", repo.url);
+                    if args.verbose {
+                        print!(
+                            "{:10} ",
+                            if repo.enabled {
+                                "[enabled]"
+                            } else {
+                                "[disabled]"
+                            }
+                        );
+                        print!("{:longest_name$} ", repo.name);
+                        println!("({})", repo.url);
+                    } else {
+                        println!("{}", repo.url)
+                    }
                 }
 
                 Ok(ExitStatus::default())
