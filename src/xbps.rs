@@ -1,7 +1,8 @@
 use crate::cli::{
-    AddArgs, CleanArgs, FindArgs, ListArgs, PinArgs, RemoveArgs, UnpinArgs, UpdateArgs,
-    UpgradeArgs, sudo,
+    AddArgs, CleanArgs, FindArgs, ListArgs, PinArgs, RemoveArgs, RepoActionArgs, RepoAddArgs,
+    RepoListArgs, UnpinArgs, UpdateArgs, UpgradeArgs, sudo,
 };
+use crate::repo::Repositories;
 use std::io::Result;
 use std::process::{Command, ExitStatus, Stdio};
 use which::which;
@@ -295,4 +296,58 @@ pub fn list_manual_pkgs(args: ListArgs) -> Result<ExitStatus> {
     }
 
     Ok(ExitStatus::default())
+}
+
+pub fn add_repo(args: RepoAddArgs) -> Result<ExitStatus> {
+    let mut repos = Repositories::open()?;
+    repos.add(args.name, args.url, !args.disabled);
+    repos.save()
+}
+
+pub fn remove_repo(args: RepoActionArgs) -> Result<ExitStatus> {
+    let mut repos = Repositories::open()?;
+    repos.remove(args.name);
+    repos.save()
+}
+
+pub fn list_repos(args: RepoListArgs) -> Result<ExitStatus> {
+    let repos = Repositories::open()?;
+
+    let filtered: Vec<_> = repos
+        .iter()
+        .filter(|x| (x.enabled && !args.no_enabled) || (!x.enabled && !args.no_disabled))
+        .collect();
+
+    let longest_name = filtered.iter().map(|x| x.name.len()).max().unwrap_or(0);
+
+    for repo in filtered {
+        if args.verbose {
+            print!(
+                "{:10} ",
+                if repo.enabled {
+                    "[enabled]"
+                } else {
+                    "[disabled]"
+                }
+            );
+            print!("{:longest_name$} ", repo.name);
+            println!("({})", repo.url);
+        } else {
+            println!("{}", repo.url)
+        }
+    }
+
+    Ok(ExitStatus::default())
+}
+
+pub fn enable_repo(args: RepoActionArgs) -> Result<ExitStatus> {
+    let mut repos = Repositories::open()?;
+    repos.enable(args.name);
+    repos.save()
+}
+
+pub fn disable_repo(args: RepoActionArgs) -> Result<ExitStatus> {
+    let mut repos = Repositories::open()?;
+    repos.disable(args.name);
+    repos.save()
 }

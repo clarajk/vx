@@ -22,7 +22,10 @@ impl Repositories {
         let contents = match std::fs::read_to_string(FILE_PATH) {
             Ok(c) => c,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                return Ok(Repositories { repos: vec![] });
+                let repos = Repositories { repos: vec![] };
+                repos.save()?;
+
+                return Ok(repos);
             }
             Err(e) => return Err(e),
         };

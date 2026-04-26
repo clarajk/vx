@@ -205,13 +205,13 @@ pub enum RepoCommand {
     #[clap(alias = "a")]
     Add(RepoAddArgs),
     #[clap(alias = "rm")]
-    Remove(RepoAddArgs),
+    Remove(RepoActionArgs),
     #[clap(alias = "ls")]
     List(RepoListArgs),
     #[clap(alias = "on", alias = "e")]
-    Enable(RepoAddArgs),
+    Enable(RepoActionArgs),
     #[clap(alias = "off", alias = "d")]
-    Disable(RepoAddArgs),
+    Disable(RepoActionArgs),
 }
 
 #[derive(clap::Args, Debug)]
