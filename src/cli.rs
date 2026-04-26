@@ -12,10 +12,19 @@ pub fn sudo(program: impl AsRef<str>) -> std::process::Command {
     cmd
 }
 
+pub fn refuse_root() {
+    if Uid::effective().is_root() {
+        eprintln!("error: vx should not be run as root or with sudo");
+        eprintln!("run it as your normal user; vx will ask for elevation only when needed");
+        std::process::exit(1);
+    }
+}
+
 #[derive(clap::Parser, Debug)]
 #[clap(version, author, about)]
 pub struct Args {
     #[clap(subcommand)]
+    /// The command to execute.
     pub command: Command,
 }
 

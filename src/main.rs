@@ -1,4 +1,4 @@
-use crate::cli::{Args, Command, ListCommand, RepoCommand};
+use crate::cli::{refuse_root, Args, Command, ListCommand, RepoCommand};
 use clap::Parser;
 
 mod cli;
@@ -6,6 +6,8 @@ mod repo;
 mod xbps;
 
 fn main() -> std::io::Result<()> {
+    refuse_root();
+
     let args = Args::parse();
 
     match args.command {
