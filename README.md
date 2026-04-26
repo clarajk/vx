@@ -37,6 +37,8 @@ Commands:
   find     Find a package using a query string
   pin      Marks package(s) as manually installed so the clean command doesn't try to remove it
   unpin    Unpin manually pinned package(s)
+  list     List packages
+  repo     Manage repositories
   help     Print this message or the help of the given subcommand(s)
 
 Options:
