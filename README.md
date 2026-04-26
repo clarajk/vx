@@ -9,7 +9,7 @@ Download the latest Linux release from the GitHub Releases page.
 
 ```sh
 curl -L -o vx.tar.gz \
-  https://github.com/sirtony/vx/releases/latest/download/vx-x86_64-unknown-linux-musl.tar.gz
+  https://github.com/clarajk/vx/releases/latest/download/vx-x86_64-unknown-linux-musl.tar.gz
 
 tar -xzf vx.tar.gz
 chmod +x vx
@@ -19,7 +19,7 @@ sudo install -Dm755 vx /usr/local/bin/vx
 ### From source
 
 ```
-cargo install --git https://github.com/sirtony/vx.git
+cargo install --git https://github.com/clarajk/vx.git
 ```
 
 ## Usage
