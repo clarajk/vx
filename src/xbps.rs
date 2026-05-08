@@ -1,6 +1,6 @@
 use crate::cli::{
     AddArgs, CleanArgs, FindArgs, ListArgs, PinArgs, RemoveArgs, RepoActionArgs, RepoAddArgs,
-    RepoListArgs, UnpinArgs, UpdateArgs, UpgradeArgs, sudo,
+    RepoListArgs, UnpinArgs, UpdateArgs, UpgradeArgs, elevate,
 };
 use crate::repo::Repositories;
 use std::io::Result;
@@ -23,7 +23,7 @@ fn no_fzf() -> ! {
 }
 
 pub fn sync() -> Result<ExitStatus> {
-    sudo("xbps-install").arg("--sync").status()
+    elevate("xbps-install").arg("--sync").status()
 }
 
 fn fzf_xbps_search(mut query: Command) -> Result<Vec<String>> {
@@ -71,7 +71,7 @@ fn parse_xbps_line(line: &str) -> Option<(bool, String)> {
 pub fn add(args: AddArgs) -> Result<ExitStatus> {
     check!(!args.packages.is_empty() || args.fzf);
 
-    let mut cmd = sudo("xbps-install");
+    let mut cmd = elevate("xbps-install");
 
     if args.force {
         cmd.arg("--force");
@@ -126,7 +126,7 @@ pub fn add(args: AddArgs) -> Result<ExitStatus> {
 }
 
 pub fn upgrade(args: UpgradeArgs) -> Result<ExitStatus> {
-    let mut cmd = sudo("xbps-install");
+    let mut cmd = elevate("xbps-install");
     cmd.arg("--update");
 
     if args.yes {
@@ -141,7 +141,7 @@ pub fn upgrade(args: UpgradeArgs) -> Result<ExitStatus> {
 }
 
 pub fn update(args: UpdateArgs) -> Result<ExitStatus> {
-    let mut cmd = sudo("xbps-install");
+    let mut cmd = elevate("xbps-install");
     cmd.args(["--sync", "--update"]);
 
     if args.dry_run {
@@ -158,7 +158,7 @@ pub fn update(args: UpdateArgs) -> Result<ExitStatus> {
 pub fn remove(args: RemoveArgs) -> Result<ExitStatus> {
     check!(!args.packages.is_empty());
 
-    let mut cmd = sudo("xbps-remove");
+    let mut cmd = elevate("xbps-remove");
 
     if args.yes {
         cmd.arg("--yes");
@@ -174,7 +174,7 @@ pub fn remove(args: RemoveArgs) -> Result<ExitStatus> {
 pub fn clean(args: CleanArgs) -> Result<ExitStatus> {
     check!(args.orphans || args.cache);
 
-    let mut cmd = sudo("xbps-remove");
+    let mut cmd = elevate("xbps-remove");
 
     if args.dry_run {
         cmd.arg("--dry-run");
@@ -221,7 +221,7 @@ pub fn find(args: FindArgs) -> Result<ExitStatus> {
 
 fn set_mode(mode: impl AsRef<str>, pkgs: Vec<String>) -> Result<ExitStatus> {
     check!(!pkgs.is_empty());
-    sudo("xbps-pkgdb")
+    elevate("xbps-pkgdb")
         .arg("--mode")
         .arg(mode.as_ref())
         .args(pkgs)

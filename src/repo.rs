@@ -1,4 +1,4 @@
-use crate::cli::sudo;
+use crate::cli::elevate;
 use std::io::Write;
 use std::path::Path;
 use std::process::ExitStatus;
@@ -128,7 +128,7 @@ impl Repositories {
     }
 
     fn install(from: impl AsRef<Path>) -> std::io::Result<ExitStatus> {
-        let mut cmd = sudo("install");
+        let mut cmd = elevate("install");
         cmd.arg("-D");
         cmd.args(["-m", "0644"]);
         cmd.args(["-o", "root"]);

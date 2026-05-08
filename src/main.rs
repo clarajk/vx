@@ -1,4 +1,4 @@
-use crate::cli::{refuse_root, Args, Command, ListCommand, RepoCommand};
+use crate::cli::{Args, Command, ListCommand, RepoCommand, refuse_root};
 use clap::Parser;
 
 mod cli;
