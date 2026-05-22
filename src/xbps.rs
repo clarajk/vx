@@ -1,6 +1,6 @@
 use crate::cli::{
     AddArgs, CleanArgs, FindArgs, ListArgs, PinArgs, RemoveArgs, RepoActionArgs, RepoAddArgs,
-    RepoListArgs, UnpinArgs, UpdateArgs, UpgradeArgs, elevate,
+    RepoListArgs, UnpinArgs, UpdateArgs, elevate,
 };
 use crate::repo::Repositories;
 use std::io::Result;
@@ -72,6 +72,7 @@ pub fn add(args: AddArgs) -> Result<ExitStatus> {
     check!(!args.packages.is_empty() || args.fzf);
 
     let mut cmd = elevate("xbps-install");
+    cmd.arg("--sync");
 
     if args.force {
         cmd.arg("--force");
@@ -123,21 +124,6 @@ pub fn add(args: AddArgs) -> Result<ExitStatus> {
 
     check!(!all_pkgs.is_empty());
     cmd.args(all_pkgs).status()
-}
-
-pub fn upgrade(args: UpgradeArgs) -> Result<ExitStatus> {
-    let mut cmd = elevate("xbps-install");
-    cmd.arg("--update");
-
-    if args.yes {
-        cmd.arg("--yes");
-    }
-
-    if args.dry_run {
-        cmd.arg("--dry-run");
-    }
-
-    cmd.status()
 }
 
 pub fn update(args: UpdateArgs) -> Result<ExitStatus> {

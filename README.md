@@ -30,7 +30,6 @@ Usage: vx <COMMAND>
 Commands:
   sync     Sync the XBPS repositories
   add      Install packages
-  upgrade  Upgrade all packages to their latest versions using existing repo data
   update   Perform a sync and full system update
   remove   Remove package(s)
   clean    Cleans orphaned packages and outdated packages in the cache

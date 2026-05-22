@@ -53,7 +53,7 @@ pub struct AddArgs {
     /// One or more packages to install.
     pub packages: Vec<String>,
 
-    #[clap(short, long)]
+    #[clap(short = 'F', long)]
     /// Force reinstallation.
     pub force: bool,
 
@@ -65,20 +65,9 @@ pub struct AddArgs {
     /// Perform a dry run to show what would be installed.
     pub dry_run: bool,
 
-    #[clap(short = 'F', long)]
+    #[clap(short, long)]
     /// Use fzf (if available) to select package(s) to install.
     pub fzf: bool,
-}
-
-#[derive(clap::Args, Debug)]
-pub struct UpgradeArgs {
-    #[clap(short, long)]
-    /// Perform a dry run to show what would be upgraded.
-    pub dry_run: bool,
-
-    #[clap(short, long)]
-    /// Assume yes to confirmation prompts.
-    pub yes: bool,
 }
 
 #[derive(clap::Args, Debug)]
@@ -160,10 +149,6 @@ pub enum Command {
     #[clap(alias = "a")]
     /// Install packages.
     Add(AddArgs),
-
-    #[clap(alias = "ug")]
-    /// Upgrade all packages to their latest versions using existing repo data.
-    Upgrade(UpgradeArgs),
 
     #[clap(alias = "up")]
     /// Perform a sync and full system update.
