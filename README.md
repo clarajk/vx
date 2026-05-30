@@ -1,6 +1,8 @@
 # vx
 A small convenience wrapper for XBPS.
 
+[![Release](https://github.com/clarajk/vx/actions/workflows/release.yml/badge.svg)](https://github.com/clarajk/vx/actions/workflows/release.yml)
+
 ## Install
 
 Download the latest Linux release from the GitHub Releases page.
