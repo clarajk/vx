@@ -1,13 +1,4 @@
 use clap::Subcommand;
-use privileged::PrivilegeMethod;
-
-pub fn privileged_method() -> anyhow::Result<PrivilegeMethod> {
-    PrivilegeMethod::from_env_var("VX_PRIVILEGED_METHOD").map_err(Into::into)
-}
-
-pub fn privileged(cmd: impl AsRef<str>) -> anyhow::Result<std::process::Command> {
-    privileged::command(cmd, privileged_method()?).map_err(Into::into)
-}
 
 pub fn refuse_root() {
     if privileged::is_privileged() {

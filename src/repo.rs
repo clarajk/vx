@@ -1,4 +1,3 @@
-use crate::cli::privileged;
 use anyhow::anyhow;
 use std::io::Write;
 use std::path::Path;
@@ -129,7 +128,7 @@ impl Repositories {
     }
 
     fn install(from: impl AsRef<Path>) -> anyhow::Result<ExitStatus> {
-        let mut cmd = privileged("install")?;
+        let mut cmd = privileged::command("install")?;
         cmd.arg("-D");
         cmd.args(["-m", "0644"]);
         cmd.args(["-o", "root"]);

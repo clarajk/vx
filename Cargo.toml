@@ -1,6 +1,6 @@
 [package]
 name = "vx"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2024"
 
 [dependencies]
@@ -8,4 +8,7 @@ clap = { version = "4.6.1", features = ["derive"] }
 tempfile = "3.27.0"
 anyhow = "1.0.102"
 which = "8.0.3"
-privileged = { git = "https://github.com/clarajk/privileged.git" }
+
+[dependencies.privileged]
+git = "https://github.com/clarajk/privileged.git"
+rev = "f463cf9c7e8727c4fbfd451775cda0ea554cc7f2"
