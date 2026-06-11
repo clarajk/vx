@@ -1,6 +1,6 @@
 use crate::cli::{
     AddArgs, CleanArgs, FindArgs, ListArgs, PinArgs, RemoveArgs, RepoActionArgs, RepoAddArgs,
-    RepoListArgs, UnpinArgs, UpdateArgs, elevate,
+    RepoListArgs, UnpinArgs, UpdateArgs, privileged,
 };
 use crate::repo::Repositories;
 use std::io::Result;
@@ -22,8 +22,11 @@ fn no_fzf() -> ! {
     std::process::exit(1);
 }
 
-pub fn sync() -> Result<ExitStatus> {
-    elevate("xbps-install").arg("--sync").status()
+pub fn sync() -> anyhow::Result<ExitStatus> {
+    privileged("xbps-install")?
+        .arg("--sync")
+        .status()
+        .map_err(Into::into)
 }
 
 fn fzf_xbps_search(mut query: Command) -> Result<Vec<String>> {
@@ -68,10 +71,10 @@ fn parse_xbps_line(line: &str) -> Option<(bool, String)> {
     Some((installed, name.to_string()))
 }
 
-pub fn add(args: AddArgs) -> Result<ExitStatus> {
+pub fn add(args: AddArgs) -> anyhow::Result<ExitStatus> {
     check!(!args.packages.is_empty() || args.fzf);
 
-    let mut cmd = elevate("xbps-install");
+    let mut cmd = privileged("xbps-install")?;
     cmd.arg("--sync");
 
     if args.force {
@@ -123,11 +126,11 @@ pub fn add(args: AddArgs) -> Result<ExitStatus> {
     all_pkgs.extend(selected);
 
     check!(!all_pkgs.is_empty());
-    cmd.args(all_pkgs).status()
+    cmd.args(all_pkgs).status().map_err(Into::into)
 }
 
-pub fn update(args: UpdateArgs) -> Result<ExitStatus> {
-    let mut cmd = elevate("xbps-install");
+pub fn update(args: UpdateArgs) -> anyhow::Result<ExitStatus> {
+    let mut cmd = privileged("xbps-install")?;
     cmd.args(["--sync", "--update"]);
 
     if args.dry_run {
@@ -138,13 +141,13 @@ pub fn update(args: UpdateArgs) -> Result<ExitStatus> {
         cmd.arg("--yes");
     }
 
-    cmd.status()
+    cmd.status().map_err(Into::into)
 }
 
-pub fn remove(args: RemoveArgs) -> Result<ExitStatus> {
+pub fn remove(args: RemoveArgs) -> anyhow::Result<ExitStatus> {
     check!(!args.packages.is_empty());
 
-    let mut cmd = elevate("xbps-remove");
+    let mut cmd = privileged("xbps-remove")?;
 
     if args.yes {
         cmd.arg("--yes");
@@ -154,13 +157,13 @@ pub fn remove(args: RemoveArgs) -> Result<ExitStatus> {
         cmd.arg("--dry-run");
     }
 
-    cmd.args(args.packages).status()
+    cmd.args(args.packages).status().map_err(Into::into)
 }
 
-pub fn clean(args: CleanArgs) -> Result<ExitStatus> {
+pub fn clean(args: CleanArgs) -> anyhow::Result<ExitStatus> {
     check!(args.orphans || args.cache);
 
-    let mut cmd = elevate("xbps-remove");
+    let mut cmd = privileged("xbps-remove")?;
 
     if args.dry_run {
         cmd.arg("--dry-run");
@@ -178,7 +181,7 @@ pub fn clean(args: CleanArgs) -> Result<ExitStatus> {
         cmd.arg("--yes");
     }
 
-    cmd.status()
+    cmd.status().map_err(Into::into)
 }
 
 pub fn find(args: FindArgs) -> Result<ExitStatus> {
@@ -205,20 +208,21 @@ pub fn find(args: FindArgs) -> Result<ExitStatus> {
     }
 }
 
-fn set_mode(mode: impl AsRef<str>, pkgs: Vec<String>) -> Result<ExitStatus> {
+fn set_mode(mode: impl AsRef<str>, pkgs: Vec<String>) -> anyhow::Result<ExitStatus> {
     check!(!pkgs.is_empty());
-    elevate("xbps-pkgdb")
+    privileged("xbps-pkgdb")?
         .arg("--mode")
         .arg(mode.as_ref())
         .args(pkgs)
         .status()
+        .map_err(Into::into)
 }
 
-pub fn pin(args: PinArgs) -> Result<ExitStatus> {
+pub fn pin(args: PinArgs) -> anyhow::Result<ExitStatus> {
     set_mode("manual", args.packages)
 }
 
-pub fn unpin(args: UnpinArgs) -> Result<ExitStatus> {
+pub fn unpin(args: UnpinArgs) -> anyhow::Result<ExitStatus> {
     set_mode("auto", args.packages)
 }
 
@@ -284,19 +288,19 @@ pub fn list_manual_pkgs(args: ListArgs) -> Result<ExitStatus> {
     Ok(ExitStatus::default())
 }
 
-pub fn add_repo(args: RepoAddArgs) -> Result<ExitStatus> {
+pub fn add_repo(args: RepoAddArgs) -> anyhow::Result<ExitStatus> {
     let mut repos = Repositories::open()?;
     repos.add(args.name, args.url, !args.disabled);
     repos.save()
 }
 
-pub fn remove_repo(args: RepoActionArgs) -> Result<ExitStatus> {
+pub fn remove_repo(args: RepoActionArgs) -> anyhow::Result<ExitStatus> {
     let mut repos = Repositories::open()?;
     repos.remove(args.name);
     repos.save()
 }
 
-pub fn list_repos(args: RepoListArgs) -> Result<ExitStatus> {
+pub fn list_repos(args: RepoListArgs) -> anyhow::Result<ExitStatus> {
     let repos = Repositories::open()?;
 
     let filtered: Vec<_> = repos
@@ -326,13 +330,13 @@ pub fn list_repos(args: RepoListArgs) -> Result<ExitStatus> {
     Ok(ExitStatus::default())
 }
 
-pub fn enable_repo(args: RepoActionArgs) -> Result<ExitStatus> {
+pub fn enable_repo(args: RepoActionArgs) -> anyhow::Result<ExitStatus> {
     let mut repos = Repositories::open()?;
     repos.enable(args.name);
     repos.save()
 }
 
-pub fn disable_repo(args: RepoActionArgs) -> Result<ExitStatus> {
+pub fn disable_repo(args: RepoActionArgs) -> anyhow::Result<ExitStatus> {
     let mut repos = Repositories::open()?;
     repos.disable(args.name);
     repos.save()

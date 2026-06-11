@@ -1,38 +1,16 @@
 use clap::Subcommand;
-use nix::unistd::Uid;
+use privileged::PrivilegeMethod;
 
-fn detect_elevation_cmd() -> Option<&'static str> {
-    if which::which("doas").is_ok() {
-        Some("doas")
-    } else if which::which("sudo").is_ok() {
-        Some("sudo")
-    } else {
-        None
-    }
+pub fn privileged_method() -> anyhow::Result<PrivilegeMethod> {
+    PrivilegeMethod::from_env_var("VX_PRIVILEGED_METHOD").map_err(Into::into)
 }
 
-pub fn elevate(program: impl AsRef<str>) -> std::process::Command {
-    // if we're already root, that's a no-no
-    refuse_root();
-
-    let priv_cmd = match std::env::var("VX_PRIVILEGE_COMMAND") {
-        Ok(cmd) => Some(cmd),
-        Err(_) => detect_elevation_cmd().map(str::to_string),
-    };
-
-    let Some(priv_cmd) = priv_cmd else {
-        eprintln!("error: unable to elevate privileges");
-        std::process::exit(1);
-    };
-
-    let mut cmd = std::process::Command::new(priv_cmd);
-    cmd.arg(program.as_ref());
-
-    cmd
+pub fn privileged(cmd: impl AsRef<str>) -> anyhow::Result<std::process::Command> {
+    privileged::command(cmd, privileged_method()?).map_err(Into::into)
 }
 
 pub fn refuse_root() {
-    if Uid::effective().is_root() {
+    if privileged::is_privileged() {
         eprintln!("error: vx should not be run as root or with sudo/doas");
         eprintln!("run it as your normal user; vx will ask for elevation only when needed");
         std::process::exit(1);

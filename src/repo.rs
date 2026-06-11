@@ -1,4 +1,5 @@
-use crate::cli::elevate;
+use crate::cli::privileged;
+use anyhow::anyhow;
 use std::io::Write;
 use std::path::Path;
 use std::process::ExitStatus;
@@ -18,7 +19,7 @@ pub struct Repositories {
 }
 
 impl Repositories {
-    pub fn open() -> std::io::Result<Repositories> {
+    pub fn open() -> anyhow::Result<Repositories> {
         let contents = match std::fs::read_to_string(FILE_PATH) {
             Ok(c) => c,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
@@ -27,7 +28,7 @@ impl Repositories {
 
                 return Ok(repos);
             }
-            Err(e) => return Err(e),
+            Err(e) => return Err(e.into()),
         };
 
         let mut repos = vec![];
@@ -63,7 +64,7 @@ impl Repositories {
         Ok(Self { repos })
     }
 
-    pub fn save(&self) -> std::io::Result<ExitStatus> {
+    pub fn save(&self) -> anyhow::Result<ExitStatus> {
         let mut file = NamedTempFile::new()?;
         Self::write_header(&mut file)?;
 
@@ -83,7 +84,7 @@ impl Repositories {
             if status.success() {
                 Ok(status)
             } else {
-                Err(std::io::Error::other("failed to install repository file"))
+                Err(anyhow!("failed to install repository file"))
             }
         })
     }
@@ -127,8 +128,8 @@ impl Repositories {
         Ok(())
     }
 
-    fn install(from: impl AsRef<Path>) -> std::io::Result<ExitStatus> {
-        let mut cmd = elevate("install");
+    fn install(from: impl AsRef<Path>) -> anyhow::Result<ExitStatus> {
+        let mut cmd = privileged("install")?;
         cmd.arg("-D");
         cmd.args(["-m", "0644"]);
         cmd.args(["-o", "root"]);
@@ -136,6 +137,6 @@ impl Repositories {
         cmd.arg(from.as_ref());
         cmd.arg(FILE_PATH);
 
-        cmd.status()
+        cmd.status().map_err(Into::into)
     }
 }

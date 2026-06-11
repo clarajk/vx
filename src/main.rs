@@ -5,7 +5,7 @@ mod cli;
 mod repo;
 mod xbps;
 
-fn main() -> std::io::Result<()> {
+fn main() -> anyhow::Result<()> {
     refuse_root();
 
     let args = Args::parse();
@@ -16,13 +16,13 @@ fn main() -> std::io::Result<()> {
         Command::Update(args) => xbps::update(args),
         Command::Remove(args) => xbps::remove(args),
         Command::Clean(args) => xbps::clean(args),
-        Command::Find(args) => xbps::find(args),
+        Command::Find(args) => xbps::find(args).map_err(Into::into),
         Command::Pin(args) => xbps::pin(args),
         Command::Unpin(args) => xbps::unpin(args),
         Command::List(args) => match args.command {
-            ListCommand::All => xbps::list_all_pkgs(args),
-            ListCommand::Orphans => xbps::list_orphaned_pkgs(args),
-            ListCommand::Manual => xbps::list_manual_pkgs(args),
+            ListCommand::All => xbps::list_all_pkgs(args).map_err(Into::into),
+            ListCommand::Orphans => xbps::list_orphaned_pkgs(args).map_err(Into::into),
+            ListCommand::Manual => xbps::list_manual_pkgs(args).map_err(Into::into),
         },
         Command::Repo(command) => match command {
             RepoCommand::Add(args) => xbps::add_repo(args),
